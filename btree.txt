@@ -1,0 +1,57 @@
+#include <stdio.h>
+#include <stdbool.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+
+#define T 64               //grau da b-tree
+#define MAX_STR_LENGTH 28 //27 caracteres mais o caracter NULL
+#define NODESIZE 4096    
+
+#define TRUE 1
+#define FALSE 0
+
+struct element 
+{
+	char word[MAX_STR_LENGTH];
+};
+
+struct node 
+{
+	int n;                              //ocupação
+	struct element element[2*T-1];     //array de struct element
+	int child[2*T];                   //array de filhos
+	int leaf;                        //é folha?
+	          
+	bool fillSpace[20];           //preencher espaço para o nó ficar com 4096 bits(20 bytes)
+};
+
+struct btree 
+{
+	int fd;                  //file descriptor do ficheiro onde se encontra a b-tree
+	struct node *root;       //raíz da b-tree
+	int rootPos;           //pos da raiz em disco
+	int size;             //tamanho da btree
+};
+
+struct header
+{
+	int root;   // = bt->rootPos
+	bool fillSpace[4092];
+};
+
+extern struct node *disk_read(struct btree *,int);
+extern void disk_write(struct btree *, struct node *, int);
+extern void write_header(struct btree *, int);
+extern struct header *read_header(struct btree*);
+extern struct btree *open_btree(void);
+extern struct btree *btree_create(void);
+extern struct node *new_node(void);
+extern void split_child(struct btree*, struct node *, int,int);
+extern void insert_nonfull (struct btree*, struct node *, char *, int );
+extern void btree_insert (struct btree *, char *);
+extern int btree_search (struct btree *, struct node *, char *);
+
